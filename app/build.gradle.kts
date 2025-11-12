@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "nikita.lusenkov.tz_weather_application"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "nikita.lusenkov.tz_weather_application"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

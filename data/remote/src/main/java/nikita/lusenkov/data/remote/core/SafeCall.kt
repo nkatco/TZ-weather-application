@@ -1,9 +1,9 @@
 package nikita.lusenkov.data.remote.core
 
-import com.squareup.moshi.JsonDataException
-import okio.IOException
-import retrofit2.HttpException
 import java.io.EOFException
+import java.io.IOException
+import kotlinx.serialization.SerializationException
+import retrofit2.HttpException
 
 /**
  * чисто методы расширения верхнего уровня
@@ -37,6 +37,6 @@ private fun mapNetworkError(t: Throwable): Throwable = when (t) {
         NetworkError.Http(code, body, message = t.message(), cause = t)
     }
     is IOException -> NetworkError.Network(t)
-    is JsonDataException, is EOFException -> NetworkError.Serialization(t)
+    is SerializationException, is EOFException -> NetworkError.Serialization(t)
     else -> NetworkError.Unknown(t)
 }

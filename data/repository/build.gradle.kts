@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "nikita.lusenkov.data.repository"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig { minSdk = 24 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -20,6 +20,8 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":data:remote"))
     implementation(project(":data:local"))
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

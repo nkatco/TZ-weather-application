@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "nikita.lusenkov.data.local"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig { minSdk = 24 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

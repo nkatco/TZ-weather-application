@@ -3,12 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
-    id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "nikita.lusenkov.data.remote"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         minSdk = 24
 
