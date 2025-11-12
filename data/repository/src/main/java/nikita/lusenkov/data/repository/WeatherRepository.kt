@@ -2,6 +2,9 @@ package nikita.lusenkov.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import nikita.lusenkov.data.local.datas.WeatherCacheLocalDataSource
 import nikita.lusenkov.data.remote.datas.WeatherRemoteDataSource
 import nikita.lusenkov.data.remote.dto.WeatherResponseDto
@@ -11,7 +14,11 @@ class WeatherRepository @Inject constructor(
     private val remote: WeatherRemoteDataSource,
     private val local: WeatherCacheLocalDataSource
 ) {
-    private val adapter = moshi.adapter(WeatherResponseDto::class.java)
+    // общий Json-конфиг, как в DI
+    private val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
 
     private fun cacheKey(
         lat: Double,
@@ -22,45 +29,41 @@ class WeatherRepository @Inject constructor(
 
     /**
      * Stale-while-revalidate:
-     * 1) Эмитим кэш, если есть (неважно свежий или нет — чтобы быстро показать данные).
-     * 2) Всегда идём в сеть; при успехе — перезаписываем кэш и эмитим обновлённое.
-     * 3) Если сети нет и кэша тоже не было — эмитим failure.
+     * 1) отдаем, если есть, кэш (любой давности),
+     * 2) всегда идём в сеть; при успехе — кладём в кэш и эмитим обновление,
+     * 3) если сети нет и кэша не было — эмитим failure.
      */
     fun getMoscow3Day(): Flow<Result<WeatherResponseDto>> = flow {
         val key = cacheKey(55.7569, 37.6151, 3, "ru")
 
-        // 1) Пробуем отдать кэш мгновенно (если есть)
+        // 1) быстрый кэш
         val cachedPair = local.getRawOrNull(key)
         var emittedFromCache = false
         cachedPair?.let { (payload, _) ->
-            adapter.fromJson(payload)?.let { cachedDto ->
-                emit(Result.success(cachedDto))
-                emittedFromCache = true
-            }
+            runCatching { json.decodeFromString<WeatherResponseDto>(payload) }
+                .onSuccess { cached ->
+                    emit(Result.success(cached))
+                    emittedFromCache = true
+                }
         }
 
-        // 2) Идём в сеть в любом случае
+        // 2) сеть
         when (val net = remote.forecastByCoords(55.7569, 37.6151, days = 3, lang = "ru")) {
             is Result.Success -> {
-                val freshDto = net.getOrNull()!!
-                // сериализуем и кладём в кэш
-                val json = adapter.toJson(freshDto)
+                val fresh = net.getOrNull()!!
+                val newJson = runCatching { json.encodeToString(fresh) }.getOrNull()
                 val oldJson = cachedPair?.first
-                val changed = json != oldJson
+                val changed = newJson != null && newJson != oldJson
                 if (changed) {
-                    local.put(key, json)
-                    // 3) Эмитим обновлённое (из модели ответа сети)
-                    emit(Result.success(freshDto))
+                    local.put(key, newJson!!)
+                    emit(Result.success(fresh))
                 } else if (!emittedFromCache) {
-                    // Кэша не эмитили (его не было), но сеть дала данные
-                    emit(Result.success(freshDto))
+                    emit(Result.success(fresh))
                 }
             }
             is Result.Failure -> {
-                val error = net.exceptionOrNull()!!
-                // Если кэш уже отдали — оставим его, доп. failure можно не слать (или можно слать ещё один Result.failure)
                 if (!emittedFromCache) {
-                    emit(Result.failure(error))
+                    emit(Result.failure(net.exceptionOrNull()!!))
                 }
             }
         }
