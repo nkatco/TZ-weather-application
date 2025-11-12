@@ -2,10 +2,10 @@ package nikita.lusenkov.domain.weather
 
 import javax.inject.Inject
 
-class GetMoscowForecastUseCase @Inject constructor(
+class GetSpbForecastUseCase @Inject constructor(
     private val repository: WeatherRepository
 ) {
     operator fun invoke(days: Int = 3) = repository.getForecast(
-        lat = 55.7569, lon = 37.6151, days = days, lang = "ru"
+        lat = 59.937500, lon = 30.308611, days = days, lang = "ru"
     )
 }

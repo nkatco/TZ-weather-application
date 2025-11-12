@@ -6,8 +6,10 @@ import kotlinx.serialization.json.Json
 import nikita.lusenkov.data.local.datas.WeatherCacheLocalDataSource
 import nikita.lusenkov.data.remote.datas.WeatherRemoteDataSource
 import nikita.lusenkov.data.remote.dto.WeatherResponseDto
+import nikita.lusenkov.domain.weather.Current
 import nikita.lusenkov.domain.weather.Day
 import nikita.lusenkov.domain.weather.Forecast
+import nikita.lusenkov.domain.weather.Hour
 import nikita.lusenkov.domain.weather.WeatherRepository
 import javax.inject.Inject
 
@@ -83,5 +85,21 @@ private fun WeatherResponseDto.toDomain(): Forecast =
                 minTempC = it.day.mintemp_c,
                 conditionText = it.day.condition.text
             )
-        }
+        },
+        current = Current(
+            tempC = current.temp_c,
+            feelsLikeC = current.feelslike_c,
+            windKph = current.wind_kph,
+            humidity = current.humidity,
+            pressureMb = current.pressure_mb,
+            uv = current.uv,
+            conditionText = current.condition.text
+        ),
+        todayHours = forecast.forecastday.firstOrNull()?.hour?.map {
+            Hour(
+                time = it.time,
+                tempC = it.temp_c,
+                conditionText = it.condition.text
+            )
+        } ?: emptyList()
     )
