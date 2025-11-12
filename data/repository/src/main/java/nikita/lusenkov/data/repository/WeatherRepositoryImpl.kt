@@ -12,6 +12,8 @@ import nikita.lusenkov.domain.weather.Forecast
 import nikita.lusenkov.domain.weather.Hour
 import nikita.lusenkov.domain.weather.WeatherRepository
 import javax.inject.Inject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 
 class WeatherRepositoryImpl @Inject constructor(
     private val remote: WeatherRemoteDataSource,
