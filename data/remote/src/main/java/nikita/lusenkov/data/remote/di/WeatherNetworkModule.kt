@@ -1,4 +1,3 @@
-// di/WeatherNetworkModule.kt
 package nikita.lusenkov.data.remote.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory

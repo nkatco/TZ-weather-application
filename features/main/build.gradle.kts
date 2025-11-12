@@ -33,10 +33,14 @@ android {
 
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":core:common"))
 
     implementation(libs.bundles.core)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.ui)
+
+    // десугаринг для java.time
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     ksp(libs.hilt.compiler)
 

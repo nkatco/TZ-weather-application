@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
-import nikita.lusenkov.features.main.MainScreen
+import nikita.lusenkov.features.main.ui.MainScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

@@ -1,7 +1,11 @@
-package nikita.lusenkov.features.main
+package nikita.lusenkov.features.main.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +60,11 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import nikita.lusenkov.domain.weather.Day
+import nikita.lusenkov.domain.weather.Forecast
+import nikita.lusenkov.domain.weather.Hour
+import nikita.lusenkov.features.main.PeriodUi
+import nikita.lusenkov.features.main.vm.MainViewModel
 import kotlin.math.roundToInt
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -90,7 +99,7 @@ private fun prettyDayLabel(dateStr: String): String {
 private fun prettyHourLabel(timeStr: String): String {
     return runCatching {
         val dt = LocalDateTime.parse(timeStr, inDateTimeFmt)
-        outHourFmt.format(dt) // "14:00"
+        outHourFmt.format(dt)
     }.getOrElse { timeStr.substringAfter(' ') }
 }
 
@@ -123,9 +132,10 @@ fun MainScreen(
                             selected = state.period,
                             onPick = { selected ->
                                 when (selected) {
-                                    MainViewModel.Period.Current -> viewModel.setPeriod(MainViewModel.Period.Current)
-                                    MainViewModel.Period.Today -> viewModel.setPeriod(MainViewModel.Period.Today)
-                                    MainViewModel.Period.Three -> viewModel.setPeriod(MainViewModel.Period.Three)
+                                    PeriodUi.Current -> viewModel.setPeriod(
+                                        PeriodUi.Current)
+                                    PeriodUi.Today -> viewModel.setPeriod(PeriodUi.Today)
+                                    PeriodUi.Three -> viewModel.setPeriod(PeriodUi.Three)
                                 }
                             }
                         )
@@ -162,9 +172,9 @@ fun MainScreen(
                     item {
                         Text(
                             text = when (state.period) {
-                                MainViewModel.Period.Current -> "Текущая погода"
-                                MainViewModel.Period.Today -> "Сегодня: почасовой прогноз"
-                                MainViewModel.Period.Three -> "Прогноз на 3 дня"
+                                PeriodUi.Current -> "Текущая погода"
+                                PeriodUi.Today -> "Сегодня: почасовой прогноз"
+                                PeriodUi.Three -> "Прогноз на 3 дня"
                             },
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -182,10 +192,10 @@ fun MainScreen(
                             val f = state.forecast
                             if (f != null) {
                                 when (state.period) {
-                                    MainViewModel.Period.Current -> {
+                                    PeriodUi.Current -> {
                                         item { CurrentBlock(f) }
                                     }
-                                    MainViewModel.Period.Today -> {
+                                    PeriodUi.Today -> {
                                         if (f.todayHours.isEmpty()) {
                                             item { EmptyBlock("Нет данных по часам") }
                                         } else {
@@ -194,7 +204,7 @@ fun MainScreen(
                                             }
                                         }
                                     }
-                                    MainViewModel.Period.Three -> {
+                                    PeriodUi.Three -> {
                                         items(f.days) { d ->
                                             DayCard(d)
                                         }
@@ -221,12 +231,18 @@ fun MainScreen(
         )
 
         if (state.isLoading && state.forecast != null) {
-            Box(
+            AnimatedVisibility(
+                visible = state.isLoading && state.forecast != null,
+                enter = fadeIn(),
+                exit = fadeOut(animationSpec = tween(200)),
                 modifier = Modifier
                     .fillMaxSize()
-                    .zIndex(3f),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+                    .zIndex(3f)
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
         }
     }
 }
@@ -243,7 +259,7 @@ private fun LoadingBlock() {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun DayCard(d: nikita.lusenkov.domain.weather.Day) {
+private fun DayCard(d: Day) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -278,7 +294,7 @@ private fun DayCard(d: nikita.lusenkov.domain.weather.Day) {
 }
 
 @Composable
-private fun CurrentBlock(f: nikita.lusenkov.domain.weather.Forecast) {
+private fun CurrentBlock(f: Forecast) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         Card(
@@ -369,7 +385,7 @@ private fun StatCard(
 }
 
 @Composable
-private fun HourMiniCard(h: nikita.lusenkov.domain.weather.Hour) {
+private fun HourMiniCard(h: Hour) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -395,7 +411,7 @@ private fun HourMiniCard(h: nikita.lusenkov.domain.weather.Hour) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun HourRow(h: nikita.lusenkov.domain.weather.Hour) {
+private fun HourRow(h: Hour) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -473,16 +489,16 @@ private fun TopCitySection(
 
 @Composable
 private fun DaysMenuAction(
-    selected: MainViewModel.Period,
-    onPick: (MainViewModel.Period) -> Unit
+    selected: PeriodUi,
+    onPick: (PeriodUi) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
 
     val label = when (selected) {
-        MainViewModel.Period.Current -> "Текущая"
-        MainViewModel.Period.Today -> "Сегодня"
-        MainViewModel.Period.Three -> "3 дня"
+        PeriodUi.Current -> "Текущая"
+        PeriodUi.Today -> "Сегодня"
+        PeriodUi.Three -> "3 дня"
     }
 
 
@@ -497,9 +513,12 @@ private fun DaysMenuAction(
             )
         ) { Text("Период: $label") }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text("Текущая") }, onClick = { expanded = false; onPick(MainViewModel.Period.Current) })
-            DropdownMenuItem(text = { Text("Сегодня") }, onClick = { expanded = false; onPick(MainViewModel.Period.Today) })
-            DropdownMenuItem(text = { Text("3 дня") }, onClick = { expanded = false; onPick(MainViewModel.Period.Three) })
+            DropdownMenuItem(text = { Text("Текущая") }, onClick = { expanded = false; onPick(
+                PeriodUi.Current) })
+            DropdownMenuItem(text = { Text("Сегодня") }, onClick = { expanded = false; onPick(
+                PeriodUi.Today) })
+            DropdownMenuItem(text = { Text("3 дня") }, onClick = { expanded = false; onPick(
+                PeriodUi.Three) })
         }
     }
 }
