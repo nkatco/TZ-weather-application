@@ -1,7 +1,9 @@
 package nikita.lusenkov.data.remote.dto
 
+import android.annotation.SuppressLint
 import kotlinx.serialization.Serializable
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class DayDto(
     val maxtemp_c: Double,

@@ -9,7 +9,6 @@ class WeatherRemoteDataSource @Inject constructor(
     private val api: WeatherApi
 ) {
     /**
-     * Возвращает Result<WeatherResponseDto>:
      *  - success -> данные прогноза
      *  - failure -> NetworkError (Http/Network/Serialization/Unknown)
      */
