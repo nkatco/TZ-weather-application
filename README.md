@@ -1,27 +1,27 @@
 ## Стек и требования
 ### Языки и инструменты
-Kotlin 2.0.21, JDK 17
-Android Gradle Plugin 8.9.3, Gradle (совместимый)
-Jetpack Compose (BOM 2025.11.00), Material3 (включая pull-to-refresh)
-Coroutines/Flow 1.9.0
-Hilt 2.52
-Retrofit 2.11.0
-Kotlinx Serialization JSON 1.7.3
-OkHttp Logging 4.12.0
-Room 2.8.3
+- Kotlin 2.0.21, JDK 17
+- Android Gradle Plugin 8.9.3, Gradle (совместимый)
+- Jetpack Compose (BOM 2025.11.00), Material3 (включая pull-to-refresh)
+- Coroutines/Flow 1.9.0
+- Hilt 2.52
+- Retrofit 2.11.0
+- Kotlinx Serialization JSON 1.7.3
+- OkHttp Logging 4.12.0
+- Room 2.8.3
 ### Android SDK
-compileSdk = 36
-minSdk = 24
+- compileSdk = 36
+- minSdk = 24
 
 ### Из разрешений - только <uses-permission android:name="android.permission.INTERNET" /> в app/src/main/AndroidManifest.xml
 
 ## Архитектура проекта - MVVM
-app/                     — точка входа, навигация и wiring фич
-features/main/           — экран погоды (Compose UI + ViewModel)
-domain/                  — сущности (Forecast), use-cases, интерфейсы
-data/repository/         — реализации репозиториев (Flow<Result<T>>)
-data/remote/             — Retrofit API, интерсепторы, dto, safeApiCall
-data/local/              — Room (кэш: таблицы, dao, datasources)
+- app/                     — точка входа, навигация и wiring фич
+- features/main/           — экран погоды (Compose UI + ViewModel)
+- domain/                  — сущности (Forecast), use-cases, интерфейсы
+- data/repository/         — реализации репозиториев (Flow<Result<T>>)
+- data/remote/             — Retrofit API, интерсепторы, dto, safeApiCall
+- data/local/              — Room (кэш: таблицы, dao, datasources)
 Ключевая зависимость: features → domain → data* (через DI).
 
 ## Как работает кэш?
